@@ -10,6 +10,20 @@
         margin: 0;
         padding: 0;
     }
+    #back-button {
+        position: fixed;
+        left: 15px;
+        bottom: 15px;
+        pointer-events: none;
+        z-index: 10;
+    }
+    #back-button a,
+    #back-button-image {
+        pointer-events: auto;
+    }
+    #back-button-image {
+        height: 60px;
+    }
     #audio-controls {
         position: fixed;
         right: 15px;
@@ -34,29 +48,33 @@
         cursor: pointer;
     }
     #contact-content {
-        text-shadow: 1px 1px 2px pink;
-        /* background-color: green; */
+        margin-top: 300px;
+        width: 350px;
+        background-color: green;
+        color: rgb(27, 27, 27);
+        text-shadow: 1px 1px rgb(255, 0, 43);
+        font-size: 25px;
+        color: white;
+        padding: 10px;
     }
     #music-content {
         color: white;
         font-size: 30px;
+        width: 100%;
+        padding-bottom: 33vh;
+        box-sizing: border-box;
     }
     #shows-content {
         color: white;
         /* background-color: green; */
     }
     .page-background {
-        position: relative;
+        position: fixed;
+        inset: 0;
         z-index: -1;
-        height: 100vh;
-        width: 100vw;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         background-size: cover;
-        flex-flow: row nowrap;
-        justify-content: center;
-        align-items: flex-start;
+        background-position: center center;
+        background-repeat: no-repeat;
     }
     #homepage-background {
         background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png');
@@ -76,8 +94,12 @@
         margin: 5px;
     }
     #fotw-background {
-        /* background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png'); */
-    }
+        /* background-image: url('https://ece.uwaterloo.ca/~dwharder/Flags/images/fotw.8000.png'); */
+  background: white;
+  background-image: radial-gradient(black 1px, transparent 0);
+  background-size: 36px 36px;
+  background-position: -16px -14px;
+}
     #contact-background {
         background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765580/flagdaybill.jpg');
     }
@@ -92,29 +114,96 @@
         justify-content: center;
     }
     #homepage-container {
-        position: absolute;
-        /* top: 62vh; */
-        bottom: 5vh;
+        position: relative;
+        min-height: 100vh;
         min-width: 500px;
         display: flex;
         flex-flow: column;
-        /* background-color: rgb(215, 174, 123); */
-        border-radius: 20px;
         align-items: center;
+        justify-content: flex-end;
+        padding-bottom: 5vh;
+        box-sizing: border-box;
         z-index: 5;
-        /* background-color: green; */
     }
+    
+    #shows-table, .shows-table-header, .shows-table-cel {
+    border: 1px solid;
+    font-family: "Cormorant Unicase";
+    font-size: 30px;
+    }
+
+    #shows-table-container {
+        height: 600px;
+        overflow-y: scroll;
+    }
+
+    .shows-table-cel, .shows-table-header {
+        padding: 5px;
+    }
+
+
+    #music-table {
+        margin-left: 150px;
+        width: 90vw;
+        display: flex;
+        flex-flow: row;
+        justify-content: space-around;
+        font-family: "Cormorant Unicase";
+
+    }
+
+    .music-table-header {
+        font-size: 40px;
+        text-shadow: 3px 3px blue;
+        margin-bottom: 20px;
+    }
+
+    .music-table-column {
+        display: flex;
+        flex-flow: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        width: 30vw;
+    }
+    
+    .music-table-column > iframe {
+        margin: 10px;
+    }
+
+    .charts-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        text-align: left;
+        font-family: "Cormorant Unicase";
+        font-size: 24px;
+    }
+    .charts-list a { color: white; text-decoration: none; }
+    .charts-list a:hover { text-decoration: underline; }
+    .charts-album { list-style: none; margin-bottom: 16px; }
+    /* .charts-album-title, .music-table-caption {
+        font-family: "Kings", serif;
+        font-size: 26px;
+        color: #ffd27a;
+        margin-bottom: 4px;
+    } */
+    .charts-album-songs {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .charts-album-songs li { padding: 2px 0; }
+
     .content-container {
-        position: absolute;
-        /* top: 62vh; */
-        top: 5vh;
+        position: relative;
+        min-height: 100vh;
         min-width: 500px;
         display: flex;
         flex-flow: column;
-        /* background-color: rgb(215, 174, 123); */
-        border-radius: 20px;
         align-items: center;
-        /* background-color: green; */
+        padding-top: 5vh;
+        box-sizing: border-box;
     }
     #main-buttons-row {
         display: flex;
@@ -133,7 +222,7 @@
         opacity: 0.8;
     }
 
-    .main-button-caption {
+    .main-button-caption, .charts-album-title, .music-table-caption {
         /* display: none; */
         font-size: 24px;
         color: rgb(204, 112, 0);
@@ -164,6 +253,9 @@
         0% { background-position: 200% 50%; }
         100% { background-position: -200% 50%; }
     }
+    .charts-album-title, .music-table-caption {
+        font-size: 30px;
+    }
     .globe {
         margin-left: 20px;
         margin-right: 20px;
@@ -177,7 +269,7 @@
         text-decoration: inherit;
     }
 
-    #flag-day-header:hover {
+    #flag-day-header:hover, #back-button-image:hover {
         opacity: 0.8;
     }
 
@@ -199,7 +291,6 @@
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a0/Fire_tornado_GIF_Manda_Lights.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original');
             background-position: center center;
             background-size: cover;
-            position: relative;
         }
 
         #homepage-background::before {
@@ -247,19 +338,18 @@
         }
 
         #homepage-container {
-            top: 0;
             min-width: 0;
             width: 100vw;
-            height: 100vh;
+            min-height: 100vh;
             align-items: center;
             z-index: 2;
         }
 
         .content-container {
-            top: 0;
             min-width: 0;
             width: 100vw;
-            height: 100vh;
+            min-height: 100vh;
+            padding-top: 0;
             align-items: center;
             z-index: 2;
         }
@@ -309,4 +399,25 @@
             height: 110px;
             margin: 0;
         }
+
+        #music-content {
+            width: 100vw;
+            padding-bottom: 33vh;
+        }
+        #music-table {
+            margin-left: 0;
+            width: 100vw;
+            flex-flow: column;
+            align-items: center;
+        }
+        .music-table-column {
+            width: 92vw;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .music-table-column > iframe {
+            width: 92vw !important;
+            max-width: 92vw;
+        }
+        .charts-list { text-align: center; }
     }

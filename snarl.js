@@ -30,7 +30,7 @@
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin) return false;
     // Only intercept .html pages (or bare directory / no extension) on our site.
-    if (url.pathname && /\.(png|jpe?g|gif|webp|svg|pdf|zip|mp3|m4a|mp4|mov)$/i.test(url.pathname)) return false;
+    if (url.pathname && /\.(png|jpe?g|gif|webp|svg|pdf|zip|mp3|m4a|mp4|mov|txt|json|xml|csv)$/i.test(url.pathname)) return false;
     return true;
   }
 
