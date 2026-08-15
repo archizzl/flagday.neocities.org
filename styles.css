@@ -1,0 +1,190 @@
+    body {
+        position: relative;
+    }
+    body, html {
+        overflow-x: hidden;
+    }
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    .page-background {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-size: cover;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    #homepage-background {
+        background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png');
+    }
+    #container-center {
+        width: 100vw;
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+    }
+    #container {
+        position: absolute;
+        /* top: 62vh; */
+        bottom: 5vh;
+        min-width: 500px;
+        display: flex;
+        flex-flow: column;
+        /* background-color: rgb(215, 174, 123); */
+        border-radius: 20px;
+        align-items: center;
+        /* background-color: green; */
+    }
+    #main-buttons-row {
+        display: flex;
+        flex-flow: row;
+        justify-content: space-around;
+    }
+    .main-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-flow: column;
+    }
+
+    .globe:hover {
+        transform: rotate(360deg);
+        opacity: 0.8;
+    }
+
+    .main-button-caption {
+        /* display: none; */
+        font-size: 24px;
+        color: rgb(204, 112, 0);
+        font-weight: 300;
+        font-family: "Kings", serif;
+        background: linear-gradient(
+            100deg,
+            #7a3a00 0%,
+            #c46a10 20%,
+            #ffb84d 40%,
+            #ffd27a 50%,
+            #ffb84d 60%,
+            #c46a10 80%,
+            #7a3a00 100%
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.7))
+                drop-shadow(1px 1px 0 #000)
+                drop-shadow(-1px -1px 0 #000);
+        animation: sparkle-shimmer 6s linear infinite;
+    }
+
+    @keyframes sparkle-shimmer {
+        0% { background-position: 200% 50%; }
+        100% { background-position: -200% 50%; }
+    }
+    .globe {
+        margin-left: 20px;
+        margin-right: 20px;
+        height: 100px;
+        width: 100px;
+        margin-bottom: 10px;
+        transition: transform 5s;
+    }
+
+    a {
+        text-decoration: inherit;
+    }
+
+    /* #content {
+        height: 70vh;
+        width: 70vw;
+        background-color: black;
+        display: flex;
+        display: none;
+        margin-bottom: 10px;
+    } */
+
+    @media (max-width: 768px) {
+        body {
+            background-color: #000;
+        }
+
+        #page1 {
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a0/Fire_tornado_GIF_Manda_Lights.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original');
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+        }
+
+        #page1::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png');
+            background-size: cover;
+            background-position: center center;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        #container {
+            top: 0;
+            min-width: 0;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            z-index: 2;
+        }
+
+        #flag-day-header {
+            width: 100vw;
+            max-width: 100vw;
+            height: auto;
+            display: block;
+            margin: 0;
+            margin-top: 20px;
+            flex: 0 0 auto;
+        }
+
+        #main-buttons-row {
+            margin-top: -30px;
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            justify-content: space-around;
+            flex: 1 1 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .main-button {
+            flex: 0 0 auto;
+            position: relative;
+            margin: 0;
+        }
+
+        .main-button-caption {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .main-button-caption {
+            font-size: 64px;
+        }
+
+        .globe {
+            width: 110px;
+            height: 110px;
+            margin: 0;
+        }
+    }
