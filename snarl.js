@@ -34,10 +34,17 @@
     return true;
   }
 
-  // fetch() is blocked on file:// origins, so load the target in a hidden
-  // iframe and read its document. Works both locally (file://) and on the
-  // live site.
-  function loadDoc(url) {
+  // Prefer fetch (fast — HTML only). Fall back to a hidden iframe if fetch
+  // is blocked (e.g. file:// origins). Final fallback is a full navigation.
+  async function loadDoc(url) {
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(res.status);
+      const html = await res.text();
+      return new DOMParser().parseFromString(html, 'text/html');
+    } catch {
+      // iframe fallback
+    }
     return new Promise((resolve, reject) => {
       const frame = document.createElement('iframe');
       frame.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden;';
