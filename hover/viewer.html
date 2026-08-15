@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Collage</title>
+<style>
+  html, body { margin: 0; background: #111; color: #eee;
+               font: 14px/1.4 -apple-system, system-ui, sans-serif; }
+  #wrap { position: relative; display: inline-block; }
+  #collage { display: block; max-width: 100vw; height: auto; user-select: none;
+             -webkit-user-drag: none; }
+  #tooltip {
+    position: fixed; pointer-events: none; z-index: 10;
+    padding: 6px 10px; background: rgba(0,0,0,.85);
+    border: 1px solid #444; border-radius: 6px;
+    color: #fff; white-space: nowrap; font-size: 14px;
+    transform: translate(12px, 12px); opacity: 0; transition: opacity .08s;
+  }
+  #tooltip.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <img id="collage" src="collage.jpg" alt="">
+</div>
+<div id="tooltip"></div>
+
+<script>
+(async function () {
+  const img = document.getElementById('collage');
+  const tip = document.getElementById('tooltip');
+
+  const captions = await fetch('captions.json').then(r => r.json());
+
+  // Load the hidden region map into an offscreen canvas we can sample.
+  const regionImg = new Image();
+  regionImg.src = 'regions.png';
+  await regionImg.decode();
+
+  const canvas = document.createElement('canvas');
+  canvas.width = regionImg.naturalWidth;
+  canvas.height = regionImg.naturalHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(regionImg, 0, 0);
+
+  let lastId = -1;
+
+  img.addEventListener('mousemove', (e) => {
+    const rect = img.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / rect.width  * canvas.width);
+    const y = Math.floor((e.clientY - rect.top)  / rect.height * canvas.height);
+    if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+
+    const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
+    const id = r | (g << 8) | (b << 16);
+
+    tip.style.left = e.clientX + 'px';
+    tip.style.top  = e.clientY + 'px';
+
+    if (id !== lastId) {
+      lastId = id;
+      const label = captions[id];
+      if (label) { tip.textContent = label; tip.classList.add('on'); }
+      else       { tip.classList.remove('on'); }
+    }
+  });
+
+  img.addEventListener('mouseleave', () => {
+    tip.classList.remove('on'); lastId = -1;
+  });
+})();
+</script>
+</body>
+</html>
