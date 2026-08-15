@@ -16,36 +16,23 @@
     <img id="audio-muted" src="assets/red_muted_icon.png" alt="Play">
     <img id="audio-playing" src="assets/red_playing_icon.png" alt="Pause">
 </div>
-<audio id="snarl" src="assets/snarl2.mp3" loop preload="auto" data-persist></audio>
+<audio id="snarl" src="https://sweetums.org/flagday/snarl2.mp3" loop preload="auto" data-persist></audio>
 <script src="snarl.js" data-persist defer></script>
     <div id="container-center">
         <div class="content-container">
             <a href="index.html"><img id="flag-day-header" src="assets/header.png"></a>
             <div id="shows-content">
-                <div id="shows-table-container">
-                    <table id="shows-table">
-                        <tr class="shows-table-row">
-                            <th class="shows-table-header">Location</th>
-                            <th class="shows-table-header">Date</th>
-                            <th class="shows-table-header">Tix</th>
-                        </tr>
-                        <tr class="shows-table-row">
-                            <td class="shows-table-cel">Bushwick Rooftop</td>
-                            <td class="shows-table-cel">9/5</td>
-                            <td class="shows-table-cel">idk</td>
-                        </tr>
-                        <tr class="shows-table-row">
-                            <td class="shows-table-cel">Hart Bar</td>
-                            <td class="shows-table-cel">idk</td>
-                            <td class="shows-table-cel">idk</td>
-                        </tr>
-                        <tr class="shows-table-row">
-                            <td class="shows-table-cel">Yale</td>
-                            <td class="shows-table-cel">idk</td>
-                            <td class="shows-table-cel">idk</td>
-                        </tr>
-                    </table>
+                <h2 class="shows-section-title">Upcoming Shows</h2>
+                <div id="upcoming-shows-container" class="shows-table-container"></div>
+
+                <h2 class="shows-section-title">Past Shows</h2>
+                <div id="past-shows-map" aria-label="Map of past show locations">
+                    <img class="map-base" alt="" draggable="false"
+                         src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1280px-Equirectangular_projection_SW.jpg">
+                    <div class="pins-layer" id="past-shows-pins"></div>
                 </div>
+
+                <div id="past-shows-container" class="shows-table-container"></div>
             </div>
         </div>
     </div>
@@ -53,5 +40,144 @@
 <div id="back-button">
     <a href="index.html"> <img src="assets/back.png" id="back-button-image"> </a>
 </div>
+<script>
+(async function () {
+    const CSV_URL = 'assets/Flag%20Day%20Performance%20Dates%20-%20shows.csv';
+    const upcomingEl = document.getElementById('upcoming-shows-container');
+    const pastEl = document.getElementById('past-shows-container');
+    if (!upcomingEl || !pastEl) return;
+
+    function parseCSV(text) {
+        const rows = [];
+        let cur = [], field = '', inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+            if (inQuotes) {
+                if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+                else if (c === '"') inQuotes = false;
+                else field += c;
+            } else {
+                if (c === '"') inQuotes = true;
+                else if (c === ',') { cur.push(field); field = ''; }
+                else if (c === '\n' || c === '\r') {
+                    if (c === '\r' && text[i + 1] === '\n') i++;
+                    cur.push(field); field = '';
+                    if (cur.some(x => x !== '')) rows.push(cur);
+                    cur = [];
+                } else field += c;
+            }
+        }
+        if (field !== '' || cur.length) {
+            cur.push(field);
+            if (cur.some(x => x !== '')) rows.push(cur);
+        }
+        return rows;
+    }
+
+    function parseDate(s) {
+        const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        if (!m) return null;
+        let y = parseInt(m[3], 10);
+        if (y < 100) y += 2000;
+        return new Date(y, parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+
+    function fmtDate(d) {
+        return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
+    }
+
+    function renderTable(container, shows, includeTix) {
+        if (shows.length === 0) {
+            container.innerHTML = '<div class="shows-empty">Nothing to see here.</div>';
+            return;
+        }
+        const headers = includeTix ? ['Date', 'Show', 'Location', 'Tix'] : ['Date', 'Show', 'Location'];
+        const cell = (v, tag) => `<${tag} class="shows-table-${tag === 'th' ? 'header' : 'cel'}">${v}</${tag}>`;
+        const headerRow = '<tr class="shows-table-row">' + headers.map(h => cell(escapeHtml(h), 'th')).join('') + '</tr>';
+        const body = shows.map(s => {
+            const cells = [fmtDate(s.date), escapeHtml(s.show), escapeHtml(s.location)];
+            if (includeTix) {
+                cells.push(
+                    s.tix
+                        ? `<a href="${escapeHtml(s.tix)}" target="_blank" rel="noopener">tix</a>`
+                        : ''
+                );
+            }
+            return '<tr class="shows-table-row">' + cells.map(c => cell(c, 'td')).join('') + '</tr>';
+        }).join('');
+        container.innerHTML = `<table class="shows-table">${headerRow}${body}</table>`;
+    }
+
+    let text;
+    try {
+        const res = await fetch(CSV_URL);
+        if (!res.ok) throw new Error(res.status);
+        text = await res.text();
+    } catch (e) {
+        upcomingEl.textContent = 'Could not load show list.';
+        return;
+    }
+
+    const rows = parseCSV(text);
+    rows.shift(); // header
+    const shows = rows
+        .map(r => ({ date: parseDate(r[0]), show: r[1] || '', location: r[2] || '', tix: (r[3] || '').trim() }))
+        .filter(s => s.date);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = shows.filter(s => s.date >= today).sort((a, b) => a.date - b.date);
+    const past = shows.filter(s => s.date < today).sort((a, b) => b.date - a.date);
+
+    renderTable(upcomingEl, upcoming, true);
+    renderTable(pastEl, past, false);
+
+    // Map of past show locations. Equirectangular projection: the map fills
+    // its container -180..+180 lng across, +90..-90 lat down, so we can
+    // project a lat/lng directly into a % offset.
+    const COORDS = {
+        'New York, NY': [40.7128, -74.0060],
+        'Boston, MA': [42.3601, -71.0589],
+        'Brookline, MA': [42.3318, -71.1212],
+        'Somerville, MA': [42.3876, -71.0995],
+        'Cambridge, MA': [42.3736, -71.1097],
+        'Allston, MA': [42.3539, -71.1337],
+        'Northeastern University, Boston, MA': [42.3398, -71.0892],
+    };
+    function coordFor(loc) {
+        if (COORDS[loc]) return COORDS[loc];
+        const m = String(loc).match(/([A-Za-z .'-]+),\s*([A-Z]{2})\s*$/);
+        if (m) {
+            const key = `${m[1].trim()}, ${m[2]}`;
+            if (COORDS[key]) return COORDS[key];
+        }
+        return null;
+    }
+    function renderPins(container, shows) {
+        if (!container) return;
+        container.innerHTML = '';
+        for (const s of shows) {
+            const coord = coordFor(s.location);
+            if (!coord) continue;
+            const [lat, lng] = coord;
+            const x = ((lng + 180) / 360) * 100;
+            const y = ((90 - lat) / 180) * 100;
+            const pin = document.createElement('div');
+            pin.className = 'pin';
+            pin.style.left = x + '%';
+            pin.style.top = y + '%';
+            pin.title = `${s.show} — ${s.location} (${fmtDate(s.date)})`;
+            container.appendChild(pin);
+        }
+    }
+    renderPins(document.getElementById('past-shows-pins'), past);
+})();
+</script>
 </body>
 </html>

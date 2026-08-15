@@ -29,7 +29,7 @@
         right: 15px;
         bottom: 15px;
         z-index: 10;
-        display: none;
+        /* display: none; */
     }
     #audio-controls > img {
         height: 30px;
@@ -37,7 +37,7 @@
         padding: 2px;
         padding-left: 4px;
         padding-right: 4px;
-        background-color: white;
+        background-color: rgba(255,255,255,.2);
         /* border-radius: 20px; */
     }
     #audio-controls.muted #audio-playing,
@@ -126,19 +126,74 @@
         z-index: 5;
     }
     
-    #shows-table, .shows-table-header, .shows-table-cel {
-    border: 1px solid;
-    font-family: "Cormorant Unicase";
-    font-size: 30px;
+    .shows-table, .shows-table-header, .shows-table-cel {
+        border: 1px solid;
+        font-family: "Cormorant Unicase";
+        font-size: 30px;
     }
-
-    #shows-table-container {
-        height: 600px;
-        overflow-y: scroll;
+    .shows-table {
+        border-collapse: collapse;
+        margin-bottom: 20px;
     }
-
+    .shows-table-container {
+        width: 90vw;
+        max-width: 900px;
+        margin-bottom: 20px;
+    }
     .shows-table-cel, .shows-table-header {
-        padding: 5px;
+        padding: 5px 10px;
+        text-align: left;
+    }
+    #instagram-link {
+        color: lightblue;
+        text-decoration: underline;
+    }
+    .shows-table a { color: inherit; text-decoration: underline; }
+    .shows-section-title {
+        font-family: "Kings", serif;
+        font-size: 36px;
+        margin-top: 20px;
+        margin-bottom: 8px;
+    }
+    .shows-empty {
+        font-family: "Cormorant Unicase";
+        font-size: 24px;
+        opacity: 0.7;
+        margin-bottom: 20px;
+    }
+    #past-shows-map {
+        position: relative;
+        width: 90vw;
+        max-width: 900px;
+        aspect-ratio: 2 / 1;
+        margin: 20px 0;
+        overflow: hidden;
+        border: 1px solid;
+        touch-action: none;
+    }
+    #past-shows-map .map-base {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: fill;
+        user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+    }
+    #past-shows-map .pins-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+    #past-shows-map .pin {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #ff2d2d;
+        border: 1px solid #fff;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 6px rgba(255, 0, 0, 0.9);
     }
 
 
