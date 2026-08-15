@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta property="og:image" content="https://res.cloudinary.com/hzxtcyzz/image/upload/v1786747838/flag_day_meta.png">
+  <meta name="viewport" content="width=device-width, initial-scale=0.7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Unicase:wght@300;400;500;600;700&family=Kings&display=swap" rel="stylesheet">
+<style>
+    body {
+        position: relative;
+    }
+    body, html {
+        overflow-x: hidden;
+    }
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    .page {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-size: cover;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    #page1 {
+        background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png');
+    }
+    #container-center {
+        width: 100vw;
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+    }
+    #container {
+        position: absolute;
+        top: 62vh;
+        min-width: 500px;
+        display: flex;
+        flex-flow: column;
+        /* background-color: rgb(215, 174, 123); */
+        border-radius: 20px;
+        align-items: center;
+        /* background-color: green; */
+    }
+    #main-buttons-row {
+        display: flex;
+        flex-flow: row;
+        justify-content: space-around;
+    }
+    .main-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-flow: column;
+    }
+
+    .globe:hover {
+        transform: rotate(360deg);
+        opacity: 0.8;
+    }
+
+    .main-button-caption {
+        /* display: none; */
+        font-size: 20px;
+        color: rgb(204, 112, 0);
+        font-weight: 300;
+        font-family: "Kings", serif;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+
+    }
+    .globe {
+        margin-left: 20px;
+        margin-right: 20px;
+        height: 100px;
+        width: 100px;
+        margin-bottom: 10px;
+        transition: transform 5s;
+    }
+
+    a {
+        text-decoration: inherit;
+    }
+</style>
+</head>
+<body>
+    <div id="container-center">
+        <div id="container">
+            <img src="header.png">
+            <div id="main-buttons-row">
+                <div class="main-button">
+                    <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Rotating_globe.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
+                    <div class="main-button-caption">Shows</div>
+                </div>
+                <div class="main-button">
+                    <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/7/7f/Rotating_earth_animated_transparent.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
+                    <div class="main-button-caption">Gallery</div>
+                </div>
+                <div class="main-button">
+                    <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/a/a8/Flag-globe.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
+                    <div class="main-button-caption">FOTW</div>
+                </div>
+                <a class="main-button" href="https://www.bostonglobe.com/about/staff-list/correspondent/henry-bova/">
+                    <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/c/ca/Rotating_globe_s.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
+                    <div class="main-button-caption">About</div>
+                </a>
+                <div class="main-button">
+                    <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/c/cb/Globe_rotating.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
+                    <div class="main-button-caption">Contact</div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="page1" class="page">
+</div>
+
+</div>
+</body>
+</html>
