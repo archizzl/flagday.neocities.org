@@ -12,17 +12,109 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Unicase:wght@300;400;500;600;700&family=Kings&display=swap" rel="stylesheet">
 </head>
 <body>
+<div id="audio-controls" class="muted" data-persist>
+    <img id="audio-muted" src="assets/red_muted_icon.png" alt="Play">
+    <img id="audio-playing" src="assets/red_playing_icon.png" alt="Pause">
+</div>
+<audio id="snarl" src="assets/snarl.m4a" loop preload="auto" data-persist></audio>
+<script src="snarl.js" data-persist defer></script>
     <div id="container-center">
-        <div id="container">
-            <img id="flag-day-header" src="header.png">
+        <div class="content-container">
+             <a href="index.html"><img id="flag-day-header" src="assets/fotw.png"></a>
             <div id="content">
-
+                <div id="fotw-hover-wrap">
+                    <img id="fotw-collage" src="hover/collage.jpg" alt="Flag of the Week collage">
+                </div>
+                <div id="fotw-tooltip"></div>
             </div>
         </div>
     </div>
-<div id="fotw-background" class="page-background">
-</div>
+<div id="fotw-background" class="page-background"></div>
+<style>
+    #fotw-hover-wrap {
+        display: inline-block;
+        margin-top: 20px;
+    }
+    #fotw-collage {
+        display: block;
+        max-width: min(50vw, 600px);
+        max-height: 75vh;
+        width: auto;
+        height: auto;
+        user-select: none;
+        -webkit-user-drag: none;
+        border-radius: 8px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+    @media (max-width: 768px) {
+        #fotw-collage {
+            max-width: 90vw;
+            max-height: none;
+        }
+    }
+    #fotw-tooltip {
+        position: fixed;
+        pointer-events: none;
+        z-index: 10;
+        padding: 6px 10px;
+        background: rgba(0, 0, 0, 0.85);
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: #fff;
+        white-space: nowrap;
+        font-size: 14px;
+        font-family: "Kings", serif;
+        transform: translate(12px, 12px);
+        opacity: 0;
+        transition: opacity 0.08s;
+    }
+    #fotw-tooltip.on { opacity: 1; }
+</style>
+<script>
+(async function () {
+    const img = document.getElementById('fotw-collage');
+    const tip = document.getElementById('fotw-tooltip');
+    if (!img || !tip) return;
 
-</div>
+    const captions = await fetch('hover/captions.json').then(r => r.json());
+
+    const regionImg = new Image();
+    regionImg.src = 'hover/regions.png';
+    await regionImg.decode();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = regionImg.naturalWidth;
+    canvas.height = regionImg.naturalHeight;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(regionImg, 0, 0);
+
+    let lastId = -1;
+
+    img.addEventListener('mousemove', (e) => {
+        const rect = img.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / rect.width  * canvas.width);
+        const y = Math.floor((e.clientY - rect.top)  / rect.height * canvas.height);
+        if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+
+        const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
+        const id = r | (g << 8) | (b << 16);
+
+        tip.style.left = e.clientX + 'px';
+        tip.style.top  = e.clientY + 'px';
+
+        if (id !== lastId) {
+            lastId = id;
+            const label = captions[id];
+            if (label) { tip.textContent = label; tip.classList.add('on'); }
+            else       { tip.classList.remove('on'); }
+        }
+    });
+
+    img.addEventListener('mouseleave', () => {
+        tip.classList.remove('on');
+        lastId = -1;
+    });
+})();
+</script>
 </body>
 </html>

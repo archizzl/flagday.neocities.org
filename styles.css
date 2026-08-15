@@ -1,5 +1,6 @@
     body {
         position: relative;
+        background-color: black;
     }
     body, html {
         overflow-x: hidden;
@@ -7,6 +8,27 @@
     * {
         margin: 0;
         padding: 0;
+    }
+    #audio-controls {
+        position: fixed;
+        right: 15px;
+        bottom: 15px;
+    } 
+    #audio-controls > img {
+        height: 30px;
+        width: auto;
+        padding: 2px;
+        padding-left: 4px;
+        padding-right: 4px;
+        background-color: white;
+        /* border-radius: 20px; */
+    }
+    #audio-controls.muted #audio-playing,
+    #audio-controls:not(.muted) #audio-muted {
+        display: none;
+    }
+    #audio-controls > img:hover {
+        cursor: pointer;
     }
     .page-background {
         height: 100vh;
@@ -22,16 +44,52 @@
     #homepage-background {
         background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png');
     }
+    #shows-background {
+        background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765558/FLAGDAY2025-47.jpg');
+    }
+    #gallery-background {
+        background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765461/IMG_0381.jpg');
+        background-size: contain;
+    }
+    #email_form {
+        display: flex;
+        flex-flow: column;
+    }
+    #email_form > * {
+        margin: 5px;
+    }
+    #fotw-background {
+        /* background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png'); */
+    }
+    #contact-background {
+        background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765580/flagdaybill.jpg');
+    }
+    #about-background {
+        background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765719/DSC05099.jpg');
+        /* background-size: contain; */
+    }
     #container-center {
         width: 100vw;
         display: flex;
         flex-flow: row;
         justify-content: center;
     }
-    #container {
+    #homepage-container {
         position: absolute;
         /* top: 62vh; */
         bottom: 5vh;
+        min-width: 500px;
+        display: flex;
+        flex-flow: column;
+        /* background-color: rgb(215, 174, 123); */
+        border-radius: 20px;
+        align-items: center;
+        /* background-color: green; */
+    }
+    .content-container {
+        position: absolute;
+        /* top: 62vh; */
+        top: 5vh;
         min-width: 500px;
         display: flex;
         flex-flow: column;
@@ -101,6 +159,10 @@
         text-decoration: inherit;
     }
 
+    #flag-day-header:hover {
+        opacity: 0.8;
+    }
+
     /* #content {
         height: 70vh;
         width: 70vw;
@@ -115,25 +177,67 @@
             background-color: #000;
         }
 
-        #page1 {
+        #homepage-background {
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a0/Fire_tornado_GIF_Manda_Lights.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original');
             background-position: center center;
             background-size: cover;
             position: relative;
         }
 
-        #page1::before {
+        #homepage-background::before {
             content: '';
             position: absolute;
             inset: 0;
             background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786749564/mike.png');
             background-size: cover;
-            background-position: center center;
+            background-position: left center;
             opacity: 0.5;
             pointer-events: none;
         }
 
-        #container {
+        #shows-background::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765558/FLAGDAY2025-47.jpg');
+            background-size: cover;
+            background-position: center center;
+            /* opacity: 0.5; */
+            pointer-events: none;
+        }
+
+        #contact-background::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765580/flagdaybill.jpg');
+            background-size: cover;
+            background-position: center center;
+            /* opacity: 0.5; */
+            pointer-events: none;
+        }
+
+        #about-background::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765719/DSC05099.jpg');
+            background-size: cover;
+            background-position: center center;
+            /* opacity: 0.5; */
+            pointer-events: none;
+        }
+
+        #homepage-container {
+            top: 0;
+            min-width: 0;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .content-container {
             top: 0;
             min-width: 0;
             width: 100vw;
