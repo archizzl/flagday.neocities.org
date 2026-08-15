@@ -14,7 +14,8 @@
         position: fixed;
         right: 15px;
         bottom: 15px;
-    } 
+        z-index: 10;
+    }
     #audio-controls > img {
         height: 30px;
         width: auto;
@@ -35,11 +36,17 @@
         text-shadow: 1px 1px 2px pink;
         /* background-color: green; */
     }
+    #music-content {
+        color: white;
+        font-size: 30px;
+    }
     #shows-content {
         color: white;
         /* background-color: green; */
     }
     .page-background {
+        position: relative;
+        z-index: -1;
         height: 100vh;
         width: 100vw;
         display: flex;
@@ -73,7 +80,7 @@
     #contact-background {
         background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765580/flagdaybill.jpg');
     }
-    #about-background {
+    #music-background {
         background-image: url('https://res.cloudinary.com/hzxtcyzz/image/upload/v1786765719/DSC05099.jpg');
         /* background-size: contain; */
     }
@@ -93,6 +100,7 @@
         /* background-color: rgb(215, 174, 123); */
         border-radius: 20px;
         align-items: center;
+        z-index: 5;
         /* background-color: green; */
     }
     .content-container {
@@ -226,7 +234,7 @@
             pointer-events: none;
         }
 
-        #about-background::before {
+        #music-background::before {
             content: '';
             position: absolute;
             inset: 0;
