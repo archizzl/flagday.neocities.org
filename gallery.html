@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Flag Day - Gallery</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 
     <meta property="og:image" content="https://res.cloudinary.com/hzxtcyzz/image/upload/v1786747838/flag_day_meta.png">
@@ -16,19 +17,225 @@
     <img id="audio-muted" src="assets/red_muted_icon.png" alt="Play">
     <img id="audio-playing" src="assets/red_playing_icon.png" alt="Pause">
 </div>
+<div id="clear-landing-bg" hidden title="Clear custom landing background">
+    <img id="paint-brush" src="assets/paint-brush-painted.png">
+</div>
 <audio id="snarl" src="https://sweetums.org/flagday/snarl2.mp3" loop preload="auto" data-persist></audio>
-<script src="snarl.js" data-persist defer></script>
+<script src="scripts/snarl.js" data-persist defer></script>
     <div id="container-center">
         <div class="content-container">
              <a href="index.html"><img id="flag-day-header" src="assets/header.png"></a>
-            <div id="content">
-
-            </div>
+            <div id="gallery-content"></div>
         </div>
     </div>
 <div id="gallery-background" class="page-background"></div>
 <div id="back-button">
     <a href="index.html"> <img src="assets/back.png" id="back-button-image"> </a>
 </div>
+
+<div id="exhibit-modal" class="exhibit-modal" hidden>
+    <div class="exhibit-modal-backdrop" data-close></div>
+    <div class="exhibit-modal-inner" role="dialog" aria-modal="true" aria-labelledby="exhibit-modal-title">
+        <button class="exhibit-modal-close" type="button" data-close aria-label="Close">&times;</button>
+        <div class="exhibit-modal-stage">
+            <button class="exhibit-modal-nav prev" type="button" data-nav="-1" aria-label="Previous">&#10094;</button>
+            <img class="exhibit-modal-image" alt="">
+            <button class="exhibit-modal-nav next" type="button" data-nav="1" aria-label="Next">&#10095;</button>
+            <button class="exhibit-modal-setbg" type="button" aria-label="Set as landing background" title="Set as landing background">
+                <img class="setbg-icon setbg-icon-unpainted" src="assets/paint-brush-unpainted.png" alt="">
+                <img class="setbg-icon setbg-icon-painted" src="assets/paint-brush-painted.png" alt="">
+            </button>
+        </div>
+        <div class="exhibit-modal-meta">
+            <div class="exhibit-modal-image-caption"></div>
+            <h2 class="exhibit-modal-title" id="exhibit-modal-title"></h2>
+            <div class="exhibit-modal-date"></div>
+            <p class="exhibit-modal-description"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+(async function () {
+    const content = document.getElementById('gallery-content');
+    if (!content) return;
+
+    function parseDate(s) {
+        if (!s) return null;
+        const d = new Date(s);
+        return isNaN(d) ? null : d;
+    }
+
+    function fmtDate(d) {
+        if (!d) return '';
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+
+    async function loadJSON(url) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(res.status);
+            return await res.json();
+        } catch (e) {
+            console.warn('Failed to load', url, e);
+            return [];
+        }
+    }
+
+    const [iframes, exhibits] = await Promise.all([
+        loadJSON('data/gallery/iframes.json'),
+        loadJSON('data/gallery/exhibits.json'),
+    ]);
+
+    const items = [];
+    for (const it of iframes) {
+        const d = parseDate(it.date);
+        if (!d || !it.iframe) continue;
+        items.push({ kind: 'iframe', date: d, html: it.iframe });
+    }
+    for (const ex of exhibits) {
+        const d = parseDate(ex.date);
+        if (!d || !Array.isArray(ex.images) || ex.images.length === 0) continue;
+        const images = ex.images
+            .map(img => typeof img === 'string' ? { src: img, caption: '' } : { src: img.src || '', caption: img.caption || '' })
+            .filter(img => img.src);
+        if (images.length === 0) continue;
+        items.push({
+            kind: 'exhibit',
+            date: d,
+            title: ex.title || '',
+            description: ex.description || '',
+            images,
+        });
+    }
+    items.sort((a, b) => b.date - a.date);
+
+    const exhibitsByIndex = [];
+
+    for (const item of items) {
+        if (item.kind === 'iframe') {
+            const wrap = document.createElement('div');
+            wrap.className = 'gallery-item gallery-iframe';
+            wrap.innerHTML = item.html;
+            content.appendChild(wrap);
+        } else {
+            const idx = exhibitsByIndex.length;
+            exhibitsByIndex.push(item);
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'gallery-item gallery-exhibit';
+            card.dataset.exhibit = String(idx);
+            card.innerHTML = `
+                <img class="exhibit-cover" src="${escapeHtml(item.images[0].src)}" alt="${escapeHtml(item.title)}">
+
+            `;
+            content.appendChild(card);
+        }
+    }
+
+                // <div class="exhibit-caption">
+                //     <div class="exhibit-title">${escapeHtml(item.title)}</div>
+                // </div>
+
+    // Slideshow modal
+    const modal = document.getElementById('exhibit-modal');
+    const modalImg = modal.querySelector('.exhibit-modal-image');
+    const modalTitle = modal.querySelector('.exhibit-modal-title');
+    const modalDate = modal.querySelector('.exhibit-modal-date');
+    const modalDesc = modal.querySelector('.exhibit-modal-description');
+    const modalImgCaption = modal.querySelector('.exhibit-modal-image-caption');
+    const setBgBtn = modal.querySelector('.exhibit-modal-setbg');
+    const clearBgBtn = document.getElementById('clear-landing-bg');
+    const BG_KEY = 'flagday-landing-bg';
+
+    function syncClearBgBtn() {
+        clearBgBtn.hidden = !localStorage.getItem(BG_KEY);
+    }
+    syncClearBgBtn();
+    clearBgBtn.addEventListener('click', () => {
+        localStorage.removeItem(BG_KEY);
+        syncClearBgBtn();
+        if (current) render();
+    });
+
+    let current = null;
+    let cursor = 0;
+
+    function render() {
+        if (!current) return;
+        const img = current.images[cursor];
+        modalImg.src = img.src;
+        modalImg.alt = current.title ? `${current.title} (${cursor + 1}/${current.images.length})` : '';
+        modalImgCaption.textContent = img.caption || '';
+        const isActive = localStorage.getItem(BG_KEY) === img.src;
+        setBgBtn.classList.toggle('is-active', isActive);
+        setBgBtn.title = isActive ? 'Currently the landing background' : 'Set as landing background';
+    }
+
+    function openExhibit(idx) {
+        current = exhibitsByIndex[idx];
+        if (!current) return;
+        cursor = 0;
+        if (modalTitle) modalTitle.textContent = current.title || '';
+        modalDate.textContent = fmtDate(current.date);
+        modalDesc.textContent = current.description || '';
+        render();
+        modal.hidden = false;
+        document.body.classList.add('modal-open');
+    }
+
+    function closeExhibit() {
+        modal.hidden = true;
+        modalImg.removeAttribute('src');
+        current = null;
+        document.body.classList.remove('modal-open');
+    }
+
+    function step(delta) {
+        if (!current) return;
+        const n = current.images.length;
+        cursor = (cursor + delta + n) % n;
+        render();
+    }
+
+    content.addEventListener('click', (e) => {
+        const card = e.target.closest('[data-exhibit]');
+        if (!card) return;
+        openExhibit(parseInt(card.dataset.exhibit, 10));
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target.closest('[data-close]')) { closeExhibit(); return; }
+        const nav = e.target.closest('[data-nav]');
+        if (nav) step(parseInt(nav.dataset.nav, 10));
+    });
+
+    setBgBtn.addEventListener('click', () => {
+        if (!current) return;
+        const img = current.images[cursor];
+        if (setBgBtn.classList.contains('is-active')) {
+            localStorage.removeItem(BG_KEY);
+        } else {
+            try { localStorage.setItem(BG_KEY, img.src); }
+            catch (e) { console.warn('localStorage set failed', e); }
+        }
+        syncClearBgBtn();
+        render();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (modal.hidden) return;
+        if (e.key === 'Escape') closeExhibit();
+        else if (e.key === 'ArrowRight') step(1);
+        else if (e.key === 'ArrowLeft') step(-1);
+    });
+})();
+</script>
 </body>
 </html>

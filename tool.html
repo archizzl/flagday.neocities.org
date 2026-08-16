@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gallery Data Tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        max-width: 1000px;
+        margin: 24px auto;
+        padding: 0 16px 80px;
+        color: #111;
+        background: #fafafa;
+    }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    p.hint { color: #555; font-size: 13px; margin: 0 0 20px; }
+    h2 { margin: 32px 0 12px; font-size: 18px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    button {
+        font-family: inherit;
+        font-size: 13px;
+        padding: 6px 10px;
+        border: 1px solid #999;
+        background: white;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    button:hover { background: #eee; }
+    button.primary { background: #2b6cb0; color: white; border-color: #2b6cb0; }
+    button.primary:hover { background: #234e83; }
+    button.danger { color: #a00; border-color: #a00; }
+    button.danger:hover { background: #fee; }
+    input, textarea {
+        font-family: inherit;
+        font-size: 13px;
+        padding: 6px 8px;
+        border: 1px solid #bbb;
+        border-radius: 3px;
+        width: 100%;
+    }
+    textarea { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+    label {
+        display: block;
+        font-size: 12px;
+        color: #444;
+        margin: 8px 0 3px;
+    }
+    .card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .card-title {
+        font-size: 13px;
+        color: #666;
+        font-weight: 600;
+    }
+    .row-2 {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 10px;
+    }
+    .image-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+        margin: 6px 0;
+        align-items: start;
+    }
+    .image-row input { width: 100%; }
+    .add-row { margin-top: 12px; }
+    .toolbar {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #ccc;
+        padding: 10px 16px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin: 24px -16px 0;
+    }
+    .file-picker {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 12px;
+        color: #444;
+    }
+    .file-picker input { display: none; }
+    .file-picker span {
+        border: 1px dashed #999;
+        padding: 4px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    #status {
+        font-size: 12px;
+        color: #666;
+        margin-right: auto;
+        align-self: center;
+    }
+</style>
+</head>
+<body>
+    <h1>Gallery Data Tool</h1>
+    <p class="hint">
+        Edit <code>data/gallery/iframes.json</code>, <code>data/gallery/exhibits.json</code>, and <code>hover/captions.json</code>.
+        Existing files load automatically if this page is served over HTTP. Otherwise use the file pickers below.
+        Click <strong>Save all</strong> to download the updated JSON.
+    </p>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px;">
+        <label class="file-picker">
+            Load iframes.json:
+            <input type="file" accept="application/json" id="load-iframes">
+            <span>choose file</span>
+        </label>
+        <label class="file-picker">
+            Load exhibits.json:
+            <input type="file" accept="application/json" id="load-exhibits">
+            <span>choose file</span>
+        </label>
+        <label class="file-picker">
+            Load captions.json:
+            <input type="file" accept="application/json" id="load-captions">
+            <span>choose file</span>
+        </label>
+    </div>
+
+    <h2>iframes</h2>
+    <div id="iframes-list"></div>
+    <button type="button" class="add-row" id="add-iframe">+ Add iframe</button>
+
+    <h2>Exhibits</h2>
+    <div id="exhibits-list"></div>
+    <button type="button" class="add-row" id="add-exhibit">+ Add exhibit</button>
+
+    <h2>Cover Captions (hover/captions.json)</h2>
+    <p class="hint">
+        Each entry is a numeric region id (matches a color in <code>regions.png</code>) with a title and optional caption.
+        Removing an entry hides that region's blurb; adding a new id only works if that region actually exists in the collage.
+    </p>
+    <div id="captions-list"></div>
+    <button type="button" class="add-row" id="add-caption">+ Add caption</button>
+
+    <div class="toolbar">
+        <div id="status"></div>
+        <button type="button" id="save-iframes">iframes.json</button>
+        <button type="button" id="save-exhibits">exhibits.json</button>
+        <button type="button" id="save-captions">captions.json</button>
+        <button type="button" class="primary" id="save-both">Save all</button>
+    </div>
+
+<script>
+(function () {
+    const iframesList = document.getElementById('iframes-list');
+    const exhibitsList = document.getElementById('exhibits-list');
+    const captionsList = document.getElementById('captions-list');
+    const statusEl = document.getElementById('status');
+
+    let iframes = [];
+    let exhibits = [];
+    // captions kept as array [{ id, title, caption }] for stable editing order
+    let captions = [];
+
+    function setStatus(msg) {
+        statusEl.textContent = msg;
+        if (msg) setTimeout(() => { if (statusEl.textContent === msg) statusEl.textContent = ''; }, 4000);
+    }
+
+    function renderIframes() {
+        iframesList.innerHTML = '';
+        iframes.forEach((it, i) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">iframe #${i + 1}</div>
+                    <button type="button" class="danger" data-action="remove-iframe" data-i="${i}">Remove</button>
+                </div>
+                <div class="row-2">
+                    <div>
+                        <label>Date (YYYY-MM-DD)</label>
+                        <input type="date" data-field="date" data-i="${i}" value="${escapeAttr(it.date || '')}">
+                    </div>
+                    <div>
+                        <label>iframe HTML (paste from YouTube etc.)</label>
+                        <textarea rows="3" data-field="iframe" data-i="${i}">${escapeHtml(it.iframe || '')}</textarea>
+                    </div>
+                </div>
+            `;
+            iframesList.appendChild(card);
+        });
+    }
+
+    function renderExhibits() {
+        exhibitsList.innerHTML = '';
+        exhibits.forEach((ex, i) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const imagesHtml = (ex.images || []).map((img, j) => `
+                <div class="image-row">
+                    <input type="text" placeholder="Image URL" data-field="image-src" data-i="${i}" data-j="${j}" value="${escapeAttr(img.src || '')}">
+                    <input type="text" placeholder="Caption (optional)" data-field="image-caption" data-i="${i}" data-j="${j}" value="${escapeAttr(img.caption || '')}">
+                    <button type="button" class="danger" data-action="remove-image" data-i="${i}" data-j="${j}">×</button>
+                </div>
+            `).join('');
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">Exhibit #${i + 1} ${ex.title ? '— ' + escapeHtml(ex.title) : ''}</div>
+                    <button type="button" class="danger" data-action="remove-exhibit" data-i="${i}">Remove exhibit</button>
+                </div>
+                <div class="row-2">
+                    <div>
+                        <label>Date (YYYY-MM-DD)</label>
+                        <input type="date" data-field="date" data-i="${i}" value="${escapeAttr(ex.date || '')}">
+                    </div>
+                    <div>
+                        <label>Title</label>
+                        <input type="text" data-field="title" data-i="${i}" value="${escapeAttr(ex.title || '')}">
+                    </div>
+                </div>
+                <label>Description</label>
+                <textarea rows="2" data-field="description" data-i="${i}">${escapeHtml(ex.description || '')}</textarea>
+                <label>Images (first is the cover)</label>
+                ${imagesHtml}
+                <button type="button" data-action="add-image" data-i="${i}" style="margin-top: 4px;">+ Add image</button>
+            `;
+            exhibitsList.appendChild(card);
+        });
+    }
+
+    function renderCaptions() {
+        captionsList.innerHTML = '';
+        captions.forEach((c, i) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">caption ${c.id !== '' ? '#' + escapeHtml(c.id) : '(new)'}</div>
+                    <button type="button" class="danger" data-action="remove-caption" data-i="${i}">Remove</button>
+                </div>
+                <div class="row-2" style="grid-template-columns: 100px 1fr;">
+                    <div>
+                        <label>ID</label>
+                        <input type="number" min="1" step="1" data-field="caption-id" data-i="${i}" value="${escapeAttr(c.id)}">
+                    </div>
+                    <div>
+                        <label>Title</label>
+                        <input type="text" data-field="caption-title" data-i="${i}" value="${escapeAttr(c.title || '')}">
+                    </div>
+                </div>
+                <label>Caption (optional)</label>
+                <textarea rows="2" data-field="caption-caption" data-i="${i}">${escapeHtml(c.caption || '')}</textarea>
+            `;
+            captionsList.appendChild(card);
+        });
+    }
+
+    function renderAll() { renderIframes(); renderExhibits(); renderCaptions(); }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+    // Field updates
+    document.body.addEventListener('input', (e) => {
+        const t = e.target;
+        const field = t.dataset.field;
+        const i = parseInt(t.dataset.i, 10);
+        if (isNaN(i) || !field) return;
+
+        if (t.closest('#iframes-list')) {
+            if (field === 'date') iframes[i].date = t.value;
+            else if (field === 'iframe') iframes[i].iframe = t.value;
+        } else if (t.closest('#captions-list')) {
+            if (field === 'caption-id') captions[i].id = t.value;
+            else if (field === 'caption-title') captions[i].title = t.value;
+            else if (field === 'caption-caption') captions[i].caption = t.value;
+        } else if (t.closest('#exhibits-list')) {
+            const ex = exhibits[i];
+            if (field === 'date') ex.date = t.value;
+            else if (field === 'title') ex.title = t.value;
+            else if (field === 'description') ex.description = t.value;
+            else if (field === 'image-src' || field === 'image-caption') {
+                const j = parseInt(t.dataset.j, 10);
+                if (!ex.images[j]) ex.images[j] = { src: '', caption: '' };
+                ex.images[j][field === 'image-src' ? 'src' : 'caption'] = t.value;
+            }
+        }
+    });
+
+    function focusField(field, i, j) {
+        const sel = j != null
+            ? `[data-field="${field}"][data-i="${i}"][data-j="${j}"]`
+            : `[data-field="${field}"][data-i="${i}"]`;
+        const el = document.querySelector(sel);
+        if (el) { el.focus(); if (el.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length); }
+    }
+
+    // Button clicks
+    document.body.addEventListener('click', (e) => {
+        const t = e.target;
+        const action = t.dataset.action;
+        if (!action) return;
+        const i = parseInt(t.dataset.i, 10);
+        const j = parseInt(t.dataset.j, 10);
+        if (action === 'remove-iframe') { iframes.splice(i, 1); renderIframes(); }
+        else if (action === 'remove-exhibit') { exhibits.splice(i, 1); renderExhibits(); }
+        else if (action === 'add-image') { exhibits[i].images.push({ src: '', caption: '' }); renderExhibits(); focusField('image-src', i, exhibits[i].images.length - 1); }
+        else if (action === 'remove-image') { exhibits[i].images.splice(j, 1); renderExhibits(); }
+        else if (action === 'remove-caption') { captions.splice(i, 1); renderCaptions(); }
+    });
+
+    document.getElementById('add-iframe').addEventListener('click', () => {
+        iframes.unshift({ date: '', iframe: '' });
+        renderIframes();
+        focusField('date', 0);
+    });
+    document.getElementById('add-exhibit').addEventListener('click', () => {
+        exhibits.unshift({ date: '', title: '', description: '', images: [{ src: '', caption: '' }] });
+        renderExhibits();
+        focusField('date', 0);
+    });
+    document.getElementById('add-caption').addEventListener('click', () => {
+        const nextId = Math.max(0, ...captions.map(c => parseInt(c.id, 10) || 0)) + 1;
+        captions.push({ id: String(nextId), title: '', caption: '' });
+        renderCaptions();
+        focusField('caption-title', captions.length - 1);
+    });
+
+    // Serialization: strip empty captions to bare-string form for cleanliness
+    function serializeIframes() {
+        return iframes.filter(it => it.date && it.iframe);
+    }
+    function serializeCaptions() {
+        const out = {};
+        // Sort by numeric id for a stable output.
+        const sorted = captions
+            .filter(c => c.id !== '' && c.title)
+            .slice()
+            .sort((a, b) => (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0));
+        for (const c of sorted) {
+            out[c.id] = c.caption ? [c.title, c.caption] : [c.title];
+        }
+        return out;
+    }
+    function serializeExhibits() {
+        return exhibits
+            .filter(ex => ex.date && Array.isArray(ex.images) && ex.images.some(img => img.src))
+            .map(ex => ({
+                date: ex.date,
+                title: ex.title || '',
+                description: ex.description || '',
+                images: ex.images
+                    .filter(img => img.src)
+                    .map(img => img.caption ? { src: img.src, caption: img.caption } : img.src),
+            }));
+    }
+
+    function download(name, obj) {
+        const blob = new Blob([JSON.stringify(obj, null, 4) + '\n'], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+    }
+
+    document.getElementById('save-iframes').addEventListener('click', () => {
+        download('iframes.json', serializeIframes());
+        setStatus('iframes.json downloaded');
+    });
+    document.getElementById('save-exhibits').addEventListener('click', () => {
+        download('exhibits.json', serializeExhibits());
+        setStatus('exhibits.json downloaded');
+    });
+    document.getElementById('save-captions').addEventListener('click', () => {
+        download('captions.json', serializeCaptions());
+        setStatus('captions.json downloaded');
+    });
+    document.getElementById('save-both').addEventListener('click', () => {
+        download('iframes.json', serializeIframes());
+        setTimeout(() => download('exhibits.json', serializeExhibits()), 150);
+        setTimeout(() => download('captions.json', serializeCaptions()), 300);
+        setStatus('All 3 files downloaded. Move iframes/exhibits to data/gallery/ and captions to hover/');
+    });
+
+    // File pickers
+    function readFile(input, cb) {
+        const f = input.files && input.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => { try { cb(JSON.parse(r.result)); } catch (e) { alert('Invalid JSON: ' + e.message); } };
+        r.readAsText(f);
+    }
+    document.getElementById('load-iframes').addEventListener('change', (e) => {
+        readFile(e.target, (data) => {
+            if (!Array.isArray(data)) return alert('iframes.json should be an array');
+            iframes = data.map(it => ({ date: it.date || '', iframe: it.iframe || '' }));
+            renderIframes();
+            setStatus('iframes loaded');
+        });
+    });
+    document.getElementById('load-exhibits').addEventListener('change', (e) => {
+        readFile(e.target, (data) => {
+            if (!Array.isArray(data)) return alert('exhibits.json should be an array');
+            exhibits = data.map(ex => ({
+                date: ex.date || '',
+                title: ex.title || '',
+                description: ex.description || '',
+                images: (ex.images || []).map(img =>
+                    typeof img === 'string' ? { src: img, caption: '' } : { src: img.src || '', caption: img.caption || '' }
+                ),
+            }));
+            renderExhibits();
+            setStatus('exhibits loaded');
+        });
+    });
+    document.getElementById('load-captions').addEventListener('change', (e) => {
+        readFile(e.target, (data) => {
+            if (!data || typeof data !== 'object' || Array.isArray(data)) return alert('captions.json should be an object');
+            captions = normalizeCaptions(data);
+            renderCaptions();
+            setStatus('captions loaded');
+        });
+    });
+
+    function normalizeCaptions(obj) {
+        return Object.keys(obj)
+            .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0))
+            .map(id => {
+                const v = obj[id];
+                const arr = Array.isArray(v) ? v : [String(v || '')];
+                return { id: String(id), title: arr[0] || '', caption: arr[1] || '' };
+            });
+    }
+
+    // Auto-load from server if available
+    async function autoLoad() {
+        try {
+            const [i, e, c] = await Promise.all([
+                fetch('data/gallery/iframes.json').then(r => r.ok ? r.json() : []),
+                fetch('data/gallery/exhibits.json').then(r => r.ok ? r.json() : []),
+                fetch('hover/captions.json').then(r => r.ok ? r.json() : {}),
+            ]);
+            if (Array.isArray(i)) iframes = i.map(it => ({ date: it.date || '', iframe: it.iframe || '' }));
+            if (Array.isArray(e)) exhibits = e.map(ex => ({
+                date: ex.date || '',
+                title: ex.title || '',
+                description: ex.description || '',
+                images: (ex.images || []).map(img =>
+                    typeof img === 'string' ? { src: img, caption: '' } : { src: img.src || '', caption: img.caption || '' }
+                ),
+            }));
+            if (c && typeof c === 'object' && !Array.isArray(c)) captions = normalizeCaptions(c);
+            renderAll();
+            setStatus('Loaded current files from server');
+        } catch (err) {
+            renderAll();
+        }
+    }
+    autoLoad();
+})();
+</script>
+</body>
+</html>

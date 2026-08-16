@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Heyo!</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <title>Flags of the World</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 
     <meta property="og:image" content="https://res.cloudinary.com/hzxtcyzz/image/upload/v1786747838/flag_day_meta.png">
@@ -17,26 +18,52 @@
     <img id="audio-playing" src="assets/red_playing_icon.png" alt="Pause">
 </div>
 <audio id="snarl" src="https://sweetums.org/flagday/snarl2.mp3" loop preload="auto" data-persist></audio>
-<script src="snarl.js" data-persist defer></script>
+<script src="scripts/snarl.js" data-persist defer></script>
     <div id="container-center">
         <div class="content-container">
              <a href="index.html"><img id="flag-day-header" src="assets/fotw.png"></a>
             <div id="content">
-                <div id="fotw-hover-wrap">
+                <div id="fotw-collage-wrap">
                     <img id="fotw-collage" src="hover/collage.jpg" alt="Flag of the Week collage">
+                    <canvas id="fotw-glow"></canvas>
                 </div>
-                <div id="fotw-tooltip"></div>
+                <div id="fotw-blurb">
+                    <div class="fotw-body">
+                        <h2 class="fotw-title"></h2>
+                        <p class="fotw-caption"></p>
+                        <div class="fotw-default">
+                            <h2 class="fotw-title"></h2>
+                            <p class="fotw-caption">This album cover was collaged by Archie O'Connell, click to hold, hover to read, blah blah blah.</p>
+                        </div>
+                    </div>
+                    <div class="fotw-progress">
+                        <span class="fotw-progress-count">0</span> / <span class="fotw-progress-total">0</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 <div id="fotw-background" class="page-background"></div>
-<div id="back-button">
+<!-- <div id="back-button">
     <a href="index.html"> <img src="assets/back.png" id="back-button-image"> </a>
-</div>
+</div> -->
 <style>
-    #fotw-hover-wrap {
-        display: inline-block;
+    #content {
+        display: flex;
+        flex-flow: row;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 24px;
         margin-top: 20px;
+        width: 100%;
+        max-width: 1260px;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
+    #fotw-collage-wrap {
+        position: relative;
+        display: inline-block;
+        flex: 0 0 auto;
     }
     #fotw-collage {
         display: block;
@@ -46,77 +73,236 @@
         height: auto;
         user-select: none;
         -webkit-user-drag: none;
-        border-radius: 8px;
+        transform: rotate(-1deg);
+        /* border-radius: 8px; */
         box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
     }
-    @media (max-width: 768px) {
-        #fotw-collage {
-            max-width: 90vw;
-            max-height: none;
+    #fotw-glow {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        border-radius: 8px;
+        transform: rotate(-1deg);
+        transform-origin: center center;
+        filter: drop-shadow(0 0 2px #ffe066) drop-shadow(0 0 5px #ffb340);
+        mix-blend-mode: screen;
+        opacity: 0;
+        transition: opacity 0.12s ease, filter 0.12s ease;
+    }
+    #fotw-glow.on { opacity: 0.6; }
+    #fotw-glow.on.locked {
+        opacity: 1;
+        filter: drop-shadow(0 0 4px #fff2b0) drop-shadow(0 0 10px #ffb340) drop-shadow(0 0 20px #ff7a1a);
+    }
+    #fotw-collage { cursor: pointer; }
+    #fotw-blurb {
+        flex: 0 0 auto;
+        width: min(50vw, 600px);
+        height: 75vh;
+        padding: 20px 24px;
+        background: rgba(0, 0, 0, 0.55);
+        color: white;
+        /* border-radius: 8px; */
+        font-family: "Cormorant Unicase";
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        box-sizing: border-box;
+        display: flex;
+        flex-flow: column;
+    }
+    .fotw-body {
+        flex: 1 1 auto;
+        overflow: auto;
+        overflow-wrap: anywhere;
+        min-height: 0;
+    }
+    #fotw-blurb.has-selection .fotw-default { display: none; }
+    #fotw-blurb:not(.has-selection) > .fotw-body > .fotw-title,
+    #fotw-blurb:not(.has-selection) > .fotw-body > .fotw-caption { display: none; }
+    .fotw-title {
+        font-family: "Kings", serif;
+        font-size: 60px;
+        margin: 0 0 12px;
+        color: #ffe066;
+    }
+    .fotw-caption {
+        font-size: 36px;
+        line-height: 1.5;
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: "Calibri"
+    }
+    .fotw-progress {
+        flex: 0 0 auto;
+        font-size: 14px;
+        opacity: 0.75;
+        text-align: right;
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        font-family: "Cormorant Unicase";
+    }
+    @media (max-width: 900px) {
+        #content {
+            flex-flow: column;
+            align-items: center;
+            padding-bottom: 40px;
+        }
+        #fotw-collage { max-width: 90vw; max-height: none; }
+        #fotw-blurb {
+            width: 90vw;
+            height: 50vh !important;
         }
     }
-    #fotw-tooltip {
-        position: fixed;
-        pointer-events: none;
-        z-index: 10;
-        padding: 6px 10px;
-        background: rgba(0, 0, 0, 0.85);
-        border: 1px solid #444;
-        border-radius: 6px;
-        color: #fff;
-        white-space: nowrap;
-        font-size: 14px;
-        font-family: "Kings", serif;
-        transform: translate(12px, 12px);
-        opacity: 0;
-        transition: opacity 0.08s;
-    }
-    #fotw-tooltip.on { opacity: 1; }
 </style>
 <script>
 (async function () {
     const img = document.getElementById('fotw-collage');
-    const tip = document.getElementById('fotw-tooltip');
-    if (!img || !tip) return;
+    const glow = document.getElementById('fotw-glow');
+    const blurb = document.getElementById('fotw-blurb');
+    const titleEl = blurb.querySelector('.fotw-body > .fotw-title');
+    const captionEl = blurb.querySelector('.fotw-body > .fotw-caption');
+    const progressCountEl = blurb.querySelector('.fotw-progress-count');
+    const progressTotalEl = blurb.querySelector('.fotw-progress-total');
+    if (!img || !glow || !blurb) return;
 
     const captions = await fetch('hover/captions.json').then(r => r.json());
+    const totalCount = Object.keys(captions).length;
+    progressTotalEl.textContent = totalCount;
+
+    const SEEN_KEY = 'fotw-seen-ids';
+    let seen;
+    try {
+        const raw = localStorage.getItem(SEEN_KEY);
+        seen = new Set(raw ? JSON.parse(raw) : []);
+    } catch (e) { seen = new Set(); }
+    function refreshProgress() {
+        // Only count ids that still exist in captions (in case ids get renumbered).
+        let count = 0;
+        for (const id of seen) if (captions[id]) count++;
+        progressCountEl.textContent = count;
+    }
+    function markSeen(id) {
+        if (!captions[id] || seen.has(String(id))) return;
+        seen.add(String(id));
+        try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seen])); } catch (e) {}
+        refreshProgress();
+    }
+    refreshProgress();
 
     const regionImg = new Image();
     regionImg.src = 'hover/regions.png';
     await regionImg.decode();
 
-    const canvas = document.createElement('canvas');
-    canvas.width = regionImg.naturalWidth;
-    canvas.height = regionImg.naturalHeight;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(regionImg, 0, 0);
+    const W = regionImg.naturalWidth;
+    const H = regionImg.naturalHeight;
+
+    const regionCanvas = document.createElement('canvas');
+    regionCanvas.width = W;
+    regionCanvas.height = H;
+    const regionCtx = regionCanvas.getContext('2d', { willReadFrequently: true });
+    regionCtx.drawImage(regionImg, 0, 0);
+    const regionData = regionCtx.getImageData(0, 0, W, H).data;
+
+    glow.width = W;
+    glow.height = H;
+    const glowCtx = glow.getContext('2d');
+
+    function paintMask(id) {
+        glowCtx.clearRect(0, 0, W, H);
+        if (id < 0) { glow.classList.remove('on'); return; }
+        const R = id & 0xff, G = (id >> 8) & 0xff, B = (id >> 16) & 0xff;
+        const out = glowCtx.createImageData(W, H);
+        const data = out.data;
+        for (let i = 0, n = regionData.length; i < n; i += 4) {
+            if (regionData[i] === R && regionData[i + 1] === G && regionData[i + 2] === B) {
+                data[i]     = 255;
+                data[i + 1] = 255;
+                data[i + 2] = 255;
+                data[i + 3] = 55;
+            }
+        }
+        glowCtx.putImageData(out, 0, 0);
+        glow.classList.add('on');
+    }
+
+    function showBlurb(id) {
+        const entry = captions[id];
+        if (!entry) {
+            blurb.classList.remove('has-selection');
+            titleEl.textContent = '';
+            captionEl.textContent = '';
+            return;
+        }
+        const [title, caption] = entry;
+        titleEl.textContent = title || '';
+        captionEl.textContent = caption || '';
+        blurb.classList.add('has-selection');
+    }
 
     let lastId = -1;
+    let lockedId = -1;
+
+    function idAt(e) {
+        const rect = img.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / rect.width  * W);
+        const y = Math.floor((e.clientY - rect.top)  / rect.height * H);
+        if (x < 0 || y < 0 || x >= W || y >= H) return -1;
+        const i = (y * W + x) * 4;
+        return regionData[i] | (regionData[i + 1] << 8) | (regionData[i + 2] << 16);
+    }
+
+    function selectId(id) {
+        if (id === lastId) return;
+        lastId = id;
+        if (captions[id]) {
+            paintMask(id);
+            showBlurb(id);
+            markSeen(id);
+        } else {
+            paintMask(-1);
+            showBlurb(null);
+        }
+    }
 
     img.addEventListener('mousemove', (e) => {
-        const rect = img.getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left) / rect.width  * canvas.width);
-        const y = Math.floor((e.clientY - rect.top)  / rect.height * canvas.height);
-        if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
-
-        const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
-        const id = r | (g << 8) | (b << 16);
-
-        tip.style.left = e.clientX + 'px';
-        tip.style.top  = e.clientY + 'px';
-
-        if (id !== lastId) {
-            lastId = id;
-            const label = captions[id];
-            if (label) { tip.textContent = label; tip.classList.add('on'); }
-            else       { tip.classList.remove('on'); }
-        }
+        if (lockedId !== -1) return;
+        selectId(idAt(e));
     });
 
     img.addEventListener('mouseleave', () => {
-        tip.classList.remove('on');
-        lastId = -1;
+        if (lockedId !== -1) return;
+        selectId(-1);
     });
+
+    img.addEventListener('click', (e) => {
+        const id = idAt(e);
+        if (captions[id] && id !== lockedId) {
+            lockedId = id;
+            glow.classList.add('locked');
+            selectId(id);
+        } else {
+            lockedId = -1;
+            glow.classList.remove('locked');
+            selectId(id);
+        }
+    });
+
+    // Match blurb height to collage rendered height on desktop.
+    function syncBlurbHeight() {
+        if (window.matchMedia('(max-width: 900px)').matches) {
+            blurb.style.height = '';
+            return;
+        }
+        const h = img.getBoundingClientRect().height;
+        if (h > 0) blurb.style.height = h + 'px';
+    }
+    syncBlurbHeight();
+    if ('ResizeObserver' in window) new ResizeObserver(syncBlurbHeight).observe(img);
+    window.addEventListener('resize', syncBlurbHeight);
 })();
 </script>
 </body>

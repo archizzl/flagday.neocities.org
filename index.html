@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Flag Day - Home</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <meta name="author" content="Archie O'Connell">
@@ -24,10 +24,10 @@
     <img id="audio-playing" src="assets/red_playing_icon.png" alt="Pause">
 </div>
 <audio id="snarl" src="https://sweetums.org/flagday/snarl2.mp3" loop preload="auto" data-persist></audio>
-<script src="snarl.js" data-persist defer></script>
+<script src="scripts/snarl.js" data-persist defer></script>
     <div id="container-center">
         <div id="homepage-container">
-             <a href="https://www.youtube.com/watch?v=hT4CePV9IMk"><img id="flag-day-header" src="assets/header.png"></a>
+             <a href="https://youtu.be/MxawVMQ02dc?si=5w1WzjCh_TRumPaE" target="_blank"><img id="flag-day-header" src="assets/header.png"></a>
             <div id="main-buttons-row">
                 <a class="main-button" href="shows.html">
                     <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Rotating_globe.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
@@ -37,7 +37,7 @@
                     <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/7/7f/Rotating_earth_animated_transparent.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
                     <div class="main-button-caption">Gallery</div>
                 </a>
-                <a class="main-button" href="fotw.html">
+                <a class="main-button" onclick="alert('coming soon!')">
                     <img class="globe" src="https://upload.wikimedia.org/wikipedia/commons/a/a8/Flag-globe.gif?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original">
                     <div class="main-button-caption">FOTW</div>
                 </a>
@@ -55,6 +55,45 @@
 <div id="homepage-background" class="page-background">
 
 </div>
+<script>
+(function () {
+    const STYLE_ID = 'flagday-landing-bg-style';
+    function syncBg() {
+        let bg = null;
+        try { bg = localStorage.getItem('flagday-landing-bg'); } catch (e) {}
+        const existing = document.getElementById(STYLE_ID);
+        if (!bg) {
+            if (existing) existing.remove();
+            return;
+        }
+        const url = `url("${bg.replace(/"/g, '\\"')}")`;
+        const fit = `
+            background-image: ${url} !important;
+            background-size: contain !important;
+            background-repeat: no-repeat !important;
+            background-position: center center !important;
+            background-color: black !important;
+        `;
+        const css = `
+            #homepage-background { ${fit} }
+            #homepage-background::before { ${fit} opacity: 1 !important; }
+        `;
+        if (existing) {
+            if (existing.textContent !== css) existing.textContent = css;
+            return;
+        }
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = css;
+        document.head.appendChild(style);
+    }
+    syncBg();
+    window.addEventListener('pageshow', syncBg);
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'flagday-landing-bg' || e.key === null) syncBg();
+    });
+})();
+</script>
 <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/hT4CePV9IMk?si=5tNkwISdGIqOEE-k" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> -->
 </body>
 </html>
