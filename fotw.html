@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Unicase:wght@300;400;500;600;700&family=Kings&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Unicase:wght@300;400;500;600;700&family=Kings&display=swap" rel="stylesheet">
 </head>
 <body>
 <div id="audio-controls" class="muted" data-persist>
@@ -24,8 +24,12 @@
              <a href="index.html"><img id="flag-day-header" src="assets/fotw.png"></a>
             <div id="content">
                 <div id="fotw-collage-wrap">
-                    <img id="fotw-collage" src="hover/collage.jpg" alt="Flag of the Week collage">
+                    <video id="fotw-cam" autoplay playsinline muted></video>
+                    <img id="fotw-collage" src="hover/fotw_collage.png" alt="Flag of the Week collage">
                     <canvas id="fotw-glow"></canvas>
+                    <button type="button" class="fotw-capture" hidden aria-label="Capture photo" title="Capture photo">
+                        <img src="assets/camera-icon.png" alt="">
+                    </button>
                 </div>
                 <div id="fotw-blurb">
                     <div class="fotw-body">
@@ -33,11 +37,16 @@
                         <p class="fotw-caption"></p>
                         <div class="fotw-default">
                             <h2 class="fotw-title"></h2>
-                            <p class="fotw-caption">This album cover was collaged by Archie O'Connell, click to hold, hover to read, blah blah blah.</p>
+                            <p class="fotw-caption">Explore the cover of Flag Day's debut album! Hover over or click on a piece of ephemera to read about it. Find them all & post the  on your instagram story and tag @flagdayband + #flagdaywebsitefifteendollaritunesgiftcardgiveawaychallenge for a chance to win a you-know-what ;) <br/> <br/><span id="cam-toggle-line">Click <a id="cam-toggle" href="#">here</a> to turn the camera <span id="cam-state">off</span>.</span></p>
                         </div>
                     </div>
                     <div class="fotw-progress">
-                        <span class="fotw-progress-count">0</span> / <span class="fotw-progress-total">0</span>
+                        <div class="fotw-progress-label">
+                            <span class="fotw-progress-count">0</span> / <span class="fotw-progress-total">0</span>
+                        </div>
+                        <!-- <div class="fotw-progress-bar">
+                            <div class="fotw-progress-fill"></div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -73,10 +82,25 @@
         height: auto;
         user-select: none;
         -webkit-user-drag: none;
-        transform: rotate(-1deg);
+        position: relative;
+        z-index: 1;
+        /* transform: rotate(-1deg); */
         /* border-radius: 8px; */
         box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
     }
+    #fotw-cam {
+        position: absolute;
+        left: 25.2%;
+        top: 25.6%;
+        width: 49.5%;
+        height: 49.5%;
+        object-fit: cover;
+        z-index: 0;
+        display: none;
+        background: #111;
+        transform: scaleX(-1);
+    }
+    #fotw-collage-wrap.complete #fotw-cam { display: block; }
     #fotw-glow {
         position: absolute;
         left: 0;
@@ -85,7 +109,8 @@
         height: 100%;
         pointer-events: none;
         border-radius: 8px;
-        transform: rotate(-1deg);
+        z-index: 2;
+        /* transform: rotate(-1deg); */
         transform-origin: center center;
         filter: drop-shadow(0 0 2px #ffe066) drop-shadow(0 0 5px #ffb340);
         mix-blend-mode: screen;
@@ -103,7 +128,7 @@
         width: min(50vw, 600px);
         height: 75vh;
         padding: 20px 24px;
-        background: rgba(0, 0, 0, 0.55);
+        background: rgba(0, 0, 0, 0.5);
         color: white;
         /* border-radius: 8px; */
         font-family: "Cormorant Unicase";
@@ -126,25 +151,102 @@
         font-family: "Kings", serif;
         font-size: 60px;
         margin: 0 0 12px;
-        color: #ffe066;
+        background: linear-gradient(
+            100deg,
+            #7a3a00 0%,
+            #c46a10 20%,
+            #ffb84d 40%,
+            #ffd27a 50%,
+            #ffb84d 60%,
+            #c46a10 80%,
+            #7a3a00 100%
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.7))
+                drop-shadow(1px 1px 0 #000)
+                drop-shadow(-1px -1px 0 #000);
+        animation: sparkle-shimmer 6s linear infinite;
     }
     .fotw-caption {
-        font-size: 36px;
+        font-size: 24px;
         line-height: 1.5;
         margin: 0;
         white-space: pre-wrap;
-        font-family: "Calibri"
+        font-family: "Calibri", "Atkinson Hyperlegible";
     }
+    .fotw-caption a {
+        color: #ffe066;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    .fotw-caption a:hover { color: #fff2b0; }
+    .fotw-caption a.fotw-caption-link {
+        color: #ff4d4d;
+        overflow-wrap: anywhere;
+    }
+    .fotw-caption a.fotw-caption-link:hover { color: #ff8080; }
+    #cam-toggle-line { display: none; }
+    body.fotw-complete #cam-toggle-line { display: inline; }
     .fotw-progress {
         flex: 0 0 auto;
         font-size: 14px;
-        opacity: 0.75;
-        text-align: right;
         margin-top: 12px;
         padding-top: 8px;
         border-top: 1px solid rgba(255, 255, 255, 0.15);
-        font-family: "Cormorant Unicase";
+        font-family: "Calibri", "Atkinson Hyperlegible";
+        display: flex;
+        flex-flow: column;
+        gap: 6px;
     }
+    .fotw-progress-label {
+        opacity: 0.75;
+        text-align: right;
+    }
+    .fotw-progress-bar {
+        position: relative;
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .fotw-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #ffb340, #ffe066);
+    }
+    .fotw-capture {
+        position: absolute;
+        left: 50%;
+        bottom: 27%;
+        transform: translateX(-50%);
+        z-index: 3;
+        padding: 6px;
+        border: 0;
+        background: rgba(0, 0, 0, 0.55);
+        border-radius: 50%;
+        cursor: pointer;
+        line-height: 0;
+        transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .fotw-capture > img {
+        width: 42px;
+        height: 42px;
+        display: block;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+    }
+    .fotw-capture:hover {
+        background: rgba(0, 0, 0, 0.8);
+        /* transform: translateX(-50%) scale(1.08); */
+    }
+    .fotw-capture:active {
+        transform: translateX(-50%) scale(0.94);
+    }
+    .fotw-capture[disabled] { opacity: 0.5; cursor: default; }
     @media (max-width: 900px) {
         #content {
             flex-flow: column;
@@ -167,7 +269,14 @@
     const captionEl = blurb.querySelector('.fotw-body > .fotw-caption');
     const progressCountEl = blurb.querySelector('.fotw-progress-count');
     const progressTotalEl = blurb.querySelector('.fotw-progress-total');
+    // const progressFillEl = blurb.querySelector('.fotw-progress-fill');
+    const captureBtn = document.querySelector('.fotw-capture');
+    const wrap = document.getElementById('fotw-collage-wrap');
+    const cam = document.getElementById('fotw-cam');
     if (!img || !glow || !blurb) return;
+
+    const COLLAGE_SRC = 'hover/fotw_collage.png';
+    const BOOTH_SRC = 'hover/fotw_collage_booth.png';
 
     const captions = await fetch('hover/captions.json').then(r => r.json());
     const totalCount = Object.keys(captions).length;
@@ -179,11 +288,81 @@
         const raw = localStorage.getItem(SEEN_KEY);
         seen = new Set(raw ? JSON.parse(raw) : []);
     } catch (e) { seen = new Set(); }
+
+    let boothActive = false;
+    let camStream = null;
+    const camToggleEl = document.getElementById('cam-toggle');
+    const camStateEl = document.getElementById('cam-state');
+    const BOOTH_PREF_KEY = 'fotw-booth-pref'; // 'on' | 'off' | null (auto)
+
+    function readBoothPref() {
+        try { return localStorage.getItem(BOOTH_PREF_KEY); } catch (e) { return null; }
+    }
+    function writeBoothPref(v) {
+        try {
+            if (v == null) localStorage.removeItem(BOOTH_PREF_KEY);
+            else localStorage.setItem(BOOTH_PREF_KEY, v);
+        } catch (e) {}
+    }
+
+    function syncCamToggleLabel() {
+        if (camStateEl) camStateEl.textContent = boothActive ? 'off' : 'on';
+    }
+
+    async function startBooth(fromUser) {
+        if (boothActive) return;
+        boothActive = true;
+        img.src = BOOTH_SRC;
+        wrap.classList.add('complete');
+        captureBtn.hidden = false;
+        captureBtn.disabled = false;
+        captureBtn.title = 'Capture photo';
+        if (fromUser) writeBoothPref('on');
+        syncCamToggleLabel();
+        try {
+            camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+            cam.srcObject = camStream;
+            await cam.play().catch(() => {});
+        } catch (e) {
+            console.warn('camera unavailable', e);
+            captureBtn.disabled = true;
+            captureBtn.title = 'camera unavailable';
+        }
+    }
+
+    function stopBooth(fromUser) {
+        if (!boothActive) return;
+        boothActive = false;
+        img.src = COLLAGE_SRC;
+        wrap.classList.remove('complete');
+        captureBtn.hidden = true;
+        if (camStream) {
+            camStream.getTracks().forEach(t => t.stop());
+            camStream = null;
+        }
+        cam.srcObject = null;
+        if (fromUser) writeBoothPref('off');
+        syncCamToggleLabel();
+    }
+
+    if (camToggleEl) {
+        camToggleEl.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (boothActive) stopBooth(true);
+            else startBooth(true);
+        });
+    }
+    syncCamToggleLabel();
+
     function refreshProgress() {
-        // Only count ids that still exist in captions (in case ids get renumbered).
         let count = 0;
         for (const id of seen) if (captions[id]) count++;
         progressCountEl.textContent = count;
+        const pct = totalCount > 0 ? (count / totalCount) * 100 : 0;
+        // progressFillEl.style.setProperty('width', pct + '%', 'important');
+        const complete = totalCount > 0 && count >= totalCount;
+        document.body.classList.toggle('fotw-complete', complete);
+        if (complete && readBoothPref() !== 'off') startBooth();
     }
     function markSeen(id) {
         if (!captions[id] || seen.has(String(id))) return;
@@ -192,6 +371,56 @@
         refreshProgress();
     }
     refreshProgress();
+    if (!boothActive && readBoothPref() === 'on') startBooth();
+
+    captureBtn.addEventListener('click', async () => {
+        if (!boothActive) return;
+        try {
+            // Composite booth PNG on top of a frame from the video, matching the on-screen layout.
+            const booth = new Image();
+            booth.crossOrigin = 'anonymous';
+            booth.src = BOOTH_SRC;
+            await booth.decode();
+            const cw = booth.naturalWidth;
+            const ch = booth.naturalHeight;
+            const out = document.createElement('canvas');
+            out.width = cw;
+            out.height = ch;
+            const octx = out.getContext('2d');
+            // Match the CSS: video sits at 25.2%/25.6%, 49.5%/49.5% of the booth.
+            const vx = 0.252 * cw;
+            const vy = 0.256 * ch;
+            const vw = 0.495 * cw;
+            const vh = 0.495 * ch;
+            if (cam.videoWidth > 0) {
+                // Mirror the video like the on-screen preview (scaleX(-1)).
+                octx.save();
+                octx.translate(vx + vw, vy);
+                octx.scale(-1, 1);
+                // object-fit: cover
+                const sr = cam.videoWidth / cam.videoHeight;
+                const dr = vw / vh;
+                let sx = 0, sy = 0, sw = cam.videoWidth, sh = cam.videoHeight;
+                if (sr > dr) { sw = cam.videoHeight * dr; sx = (cam.videoWidth - sw) / 2; }
+                else         { sh = cam.videoWidth / dr;  sy = (cam.videoHeight - sh) / 2; }
+                octx.drawImage(cam, sx, sy, sw, sh, 0, 0, vw, vh);
+                octx.restore();
+            } else {
+                octx.fillStyle = '#111';
+                octx.fillRect(vx, vy, vw, vh);
+            }
+            octx.drawImage(booth, 0, 0, cw, ch);
+            const url = out.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'flag-day-photobooth.png';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (e) {
+            console.warn('capture failed', e);
+        }
+    });
 
     const regionImg = new Image();
     regionImg.src = 'hover/regions.png';
@@ -229,6 +458,20 @@
         glow.classList.add('on');
     }
 
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+    // Match http/https URLs, and bare www.* URLs. Trailing punctuation (.,;:!?) is trimmed out.
+    const URL_RE = /((?:https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?)\]])/g;
+    function linkify(text) {
+        return escapeHtml(text).replace(URL_RE, (m) => {
+            const href = m.startsWith('www.') ? 'http://' + m : m;
+            return `<a class="fotw-caption-link" href="${href}" target="_blank" rel="noopener noreferrer">${m}</a>`;
+        });
+    }
+
     function showBlurb(id) {
         const entry = captions[id];
         if (!entry) {
@@ -239,7 +482,7 @@
         }
         const [title, caption] = entry;
         titleEl.textContent = title || '';
-        captionEl.textContent = caption || '';
+        captionEl.innerHTML = linkify(caption || '');
         blurb.classList.add('has-selection');
     }
 
@@ -289,6 +532,23 @@
             glow.classList.remove('locked');
             selectId(id);
         }
+    });
+
+    function clearLock() {
+        if (lockedId === -1) return;
+        lockedId = -1;
+        glow.classList.remove('locked');
+        selectId(-1);
+    }
+
+    document.addEventListener('click', (e) => {
+        if (lockedId === -1) return;
+        if (wrap.contains(e.target)) return;
+        clearLock();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') clearLock();
     });
 
     // Match blurb height to collage rendered height on desktop.
